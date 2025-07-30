@@ -1,12 +1,11 @@
+// @ts-ignore: NextResponse import for Next.js API route
 import { NextResponse } from 'next/server'
 import { NOAABuoyData, NOAABuoyReading, NOAAStationMetadata } from '@/types/buoy'
 import { loadStations, type TsunamiStation } from '@/utils/stations-manager'
 
 async function fetchStationMetadata(stationId: string): Promise<NOAAStationMetadata | null> {
   try {
-    const response = await fetch(`https://www.ndbc.noaa.gov/station_page.php?station=${stationId}`, {
-      next: { revalidate: 3600 } // Cache for 1 hour
-    })
+    const response = await fetch(`https://www.ndbc.noaa.gov/station_page.php?station=${stationId}`)
     
     if (!response.ok) return null
     
@@ -43,10 +42,7 @@ async function fetchStationMetadata(stationId: string): Promise<NOAAStationMetad
 
 async function fetchStationData(stationId: string): Promise<NOAABuoyReading[]> {
   try {
-    // NOAA real-time data endpoint
-    const response = await fetch(`https://www.ndbc.noaa.gov/data/realtime2/${stationId}.txt`, {
-      next: { revalidate: 300 } // Cache for 5 minutes
-    })
+    const response = await fetch(`https://www.ndbc.noaa.gov/data/realtime2/${stationId}.txt`)
     
     if (!response.ok) {
       console.warn(`No data available for station ${stationId}`)
@@ -214,8 +210,15 @@ export async function GET() {
     })
     
     const buoyData = await Promise.all(buoyPromises)
-    
-    return NextResponse.json(buoyData.filter((buoy: NOAABuoyData) => buoy.readings.length > 0))
+
+    // Always include buoys with valid coordinates, even if no readings
+    const visibleBuoys = buoyData.filter((buoy: NOAABuoyData) => {
+      const lat = buoy.location?.latitude
+      const lon = buoy.location?.longitude
+      return typeof lat === 'number' && typeof lon === 'number' && Math.abs(lat) > 0 && Math.abs(lon) > 0
+    })
+
+    return NextResponse.json(visibleBuoys)
   } catch (error) {
     console.error('Error fetching NOAA buoy data:', error)
     return NextResponse.json(

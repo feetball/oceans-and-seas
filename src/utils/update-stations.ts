@@ -1,3 +1,5 @@
+// Always run the update when this script is executed directly
+runUpdate();
 import { promises as fs } from 'fs'
 import path from 'path'
 
@@ -21,6 +23,7 @@ interface TsunamiStation {
   country: string
   type: 'dart' | 'offshore' | 'coastal' | 'lake'
   priority: 'critical' | 'high' | 'medium' | 'low'
+  hasData?: boolean
 }
 
 /**
@@ -28,7 +31,7 @@ interface TsunamiStation {
  */
 async function fetchAllNOAAStations(): Promise<NOAAStation[]> {
   try {
-    console.log('Fetching all NOAA stations...')
+  console.log('Step 1: Fetching all NOAA stations...')
     
     // Try the stations list endpoint
     const response = await fetch('https://www.ndbc.noaa.gov/data/stations/station_table.txt')
@@ -271,24 +274,49 @@ export async function updateStationsFromNOAA(): Promise<boolean> {
     
     const noaaStations = await fetchAllNOAAStations()
     
+    console.log('Step 2: NOAA stations fetched:', noaaStations.length)
     if (noaaStations.length === 0) {
       console.error('No stations retrieved from NOAA')
       return false
     }
+
+    // Debug: print a sample station
+    console.log('Sample station:', JSON.stringify(noaaStations[0], null, 2))
     
     console.log(`Converting ${noaaStations.length} NOAA stations...`)
     
     // Convert to our format
-    const tsunamiStations = noaaStations.map(convertToTsunamiStation)
+  console.log('Step 3: Converting NOAA stations to tsunami stations...')
+    // Actively check each station for real data
+    const tsunamiStations: TsunamiStation[] = [];
+    for (const station of noaaStations) {
+      const tsStation = convertToTsunamiStation(station);
+      try {
+        // Try to fetch real-time data for the station
+        const response = await fetch(`https://www.ndbc.noaa.gov/data/realtime2/${station.id}.txt`);
+        if (response.ok) {
+          const text = await response.text();
+          // If there are more than 3 lines (header, units, at least one data row), mark as having data
+          const lines = text.split('\n').filter(line => line.trim());
+          tsStation.hasData = lines.length > 3;
+        } else {
+          tsStation.hasData = false;
+        }
+      } catch (err) {
+        tsStation.hasData = false;
+      }
+      tsunamiStations.push(tsStation);
+    }
+  console.log('Step 4: Converted stations:', tsunamiStations.length)
     
     // Filter to keep only useful stations (those with reasonable coordinates)
+    console.log('Step 5: Filtering valid stations...')
     const filteredStations = tsunamiStations.filter(station => 
       Math.abs(station.lat) <= 90 && 
       Math.abs(station.lon) <= 180 &&
       station.name.length > 0
     )
-    
-    console.log(`Filtered to ${filteredStations.length} valid stations`)
+    console.log(`Step 6: Filtered to ${filteredStations.length} valid stations`)
     
     // Create the updated JSON structure
     const stationsData = {
@@ -316,7 +344,14 @@ export async function updateStationsFromNOAA(): Promise<boolean> {
     
     // Write to the JSON file
     const stationsPath = path.join(process.cwd(), 'src', 'data', 'tsunami-stations.json')
-    await fs.writeFile(stationsPath, JSON.stringify(stationsData, null, 2))
+    console.log('Step 7: Writing stations to', stationsPath)
+    try {
+      await fs.writeFile(stationsPath, JSON.stringify(stationsData, null, 2))
+      console.log('Step 8: Successfully wrote to', stationsPath)
+    } catch (writeError) {
+      console.error('Step 8: Failed to write stations file:', writeError)
+      return false
+    }
     
     console.log(`Successfully updated stations file with ${filteredStations.length} stations`)
     console.log('Breakdown by region:')
@@ -338,15 +373,8 @@ export async function updateStationsFromNOAA(): Promise<boolean> {
   }
 }
 
-// Run the update if this script is executed directly
-if (require.main === module) {
-  updateStationsFromNOAA()
-    .then(success => {
-      console.log(success ? 'Update completed successfully' : 'Update failed')
-      process.exit(success ? 0 : 1)
-    })
-    .catch(error => {
-      console.error('Script failed:', error)
-      process.exit(1)
-    })
+// For ES module usage, export the update function and run if imported directly
+export async function runUpdate() {
+  const success = await updateStationsFromNOAA()
+  console.log(success ? 'Update completed successfully' : 'Update failed')
 }
