@@ -1,5 +1,8 @@
 // Always run the update when this script is executed directly
-runUpdate();
+// Only run if not in production to avoid blocking Railway builds
+if (process.env.NODE_ENV !== 'production') {
+  runUpdate();
+}
 import { promises as fs } from 'fs'
 import path from 'path'
 
