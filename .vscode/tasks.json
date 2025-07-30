@@ -1,0 +1,86 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "dev",
+			"type": "npm",
+			"script": "dev",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			},
+			"isBackground": true,
+			"problemMatcher": {
+				"owner": "nextjs",
+				"pattern": [
+					{
+						"regexp": "^\\s*at\\s+(\\S+)\\s+\\((.*?):(\\d+):(\\d+)\\)$",
+						"file": 2,
+						"line": 3,
+						"column": 4
+					}
+				],
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": ".*Starting the development server.*",
+					"endsPattern": ".*(Local|Ready).*"
+				}
+			}
+		},
+		{
+			"label": "build",
+			"type": "npm",
+			"script": "build",
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			}
+		},
+		{
+			"label": "start",
+			"type": "npm",
+			"script": "start",
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"isBackground": true
+		},
+		{
+			"label": "lint",
+			"type": "npm",
+			"script": "lint",
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			}
+		},
+		{
+			"label": "Ocean Buoy Map - Development Server",
+			"type": "shell",
+			"command": "npm run dev",
+			"isBackground": true,
+			"problemMatcher": [
+				"$tsc-watch"
+			],
+			"group": "build"
+		}
+	]
+}
