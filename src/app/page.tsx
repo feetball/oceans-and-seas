@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import BuoyDataPanel from '@/components/BuoyDataPanel'
 import TsunamiAlert from '@/components/TsunamiAlert'
 import TsunamiControlPanel from '@/components/TsunamiControlPanel'
+import TsunamiPlaybackControls from '@/components/TsunamiPlaybackControls'
 import CacheStatusPanel from '@/components/CacheStatusPanel'
 import { NOAABuoyData } from '@/types/buoy'
 
@@ -30,8 +31,8 @@ export default function Home() {
   const [isSimulationActive, setIsSimulationActive] = useState(true) // Default to simulation active
   const [selectedSimulationEvent, setSelectedSimulationEvent] = useState('mock')
 
-  // Enhanced tsunami detection logic
-  const detectTsunami = useCallback((buoy: NOAABuoyData) => {
+  // Enhanced tsunami detection logic with simulation support
+  const detectTsunami = useCallback((buoy: NOAABuoyData, simulationTime?: Date) => {
     if (buoy.readings.length < 2) return { isTsunami: false, severity: 'normal' as const }
     
     const latestReading = buoy.readings[buoy.readings.length - 1]
@@ -43,6 +44,27 @@ export default function Home() {
     
     const heightChange = currentHeight - previousHeight
     const heightChangePercent = (heightChange / (previousHeight || 1)) * 100
+    
+    // In simulation mode, generate realistic tsunami data based on simulation time
+    if (simulationTime) {
+      // Generate tsunami effects based on distance from epicenter and time
+      const lat = buoy.location?.latitude || 0
+      const lon = buoy.location?.longitude || 0
+      
+      // Simplified tsunami simulation based on distance and time
+      // This would normally use complex wave propagation models
+      const distanceToEvent = Math.sqrt(Math.pow(lat - 38.3, 2) + Math.pow(lon - 142.4, 2)) // Distance from Tōhoku epicenter
+      const waveArrivalTime = distanceToEvent * 0.5 // Simplified timing in hours
+      const currentSimHours = (Date.now() - simulationTime.getTime()) / (1000 * 60 * 60)
+      
+      if (currentSimHours >= waveArrivalTime) {
+        // Wave has arrived - simulate magnitude based on distance
+        const intensity = Math.max(0, 8 - distanceToEvent * 0.1) // Decrease with distance
+        if (intensity > 6) return { isTsunami: true, severity: 'critical' as const }
+        if (intensity > 4) return { isTsunami: true, severity: 'high' as const }
+        if (intensity > 2) return { isTsunami: true, severity: 'medium' as const }
+      }
+    }
     
     // Check for multiple warning indicators
     const hasSignificantWaveHeight = currentHeight > 2.5 // Lowered threshold for better detection
@@ -204,6 +226,7 @@ export default function Home() {
         <div className="w-96 bg-slate-800 border-l border-slate-700 overflow-y-auto">
           <div className="p-4 space-y-4">
             <CacheStatusPanel />
+            <TsunamiPlaybackControls />
             <TsunamiControlPanel
               onSimulationToggle={setIsSimulationActive}
               onEventSelect={setSelectedSimulationEvent}
