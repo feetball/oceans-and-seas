@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import BuoyDataPanel from '@/components/BuoyDataPanel'
 import TsunamiAlert from '@/components/TsunamiAlert'
 import TsunamiControlPanel from '@/components/TsunamiControlPanel'
+import CacheStatusPanel from '@/components/CacheStatusPanel'
 import { NOAABuoyData } from '@/types/buoy'
 
 // Dynamically import the map component to avoid SSR issues
@@ -86,7 +87,10 @@ export default function Home() {
       setError(null)
       
       const response = await fetch('/api/buoys', {
-        cache: 'no-store' // Ensure fresh data
+        cache: 'no-store', // Ensure fresh data
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
       })
       
       if (!response.ok) {
@@ -198,7 +202,8 @@ export default function Home() {
 
         {/* Side Panel */}
         <div className="w-96 bg-slate-800 border-l border-slate-700 overflow-y-auto">
-          <div className="p-4">
+          <div className="p-4 space-y-4">
+            <CacheStatusPanel />
             <TsunamiControlPanel
               onSimulationToggle={setIsSimulationActive}
               onEventSelect={setSelectedSimulationEvent}

@@ -3,6 +3,53 @@ import { NextResponse } from 'next/server'
 import { NOAABuoyData, NOAABuoyReading, NOAAStationMetadata } from '@/types/buoy'
 import { loadStations, type TsunamiStation } from '@/utils/stations-manager'
 import { createMockTsunamiEvent, generateTsunamiReadings } from '@/utils/tsunami-simulation'
+import { buoyCacheManager } from '@/utils/buoy-cache'
+
+// Enhanced tsunami detection for caching
+function detectTsunamiStatus(buoy: NOAABuoyData): { isTsunami: boolean; severity: 'normal' | 'medium' | 'high' | 'critical' } {
+  if (buoy.readings.length < 2) return { isTsunami: false, severity: 'normal' }
+  
+  const latestReading = buoy.readings[buoy.readings.length - 1]
+  const previousReading = buoy.readings[buoy.readings.length - 2]
+  
+  const currentHeight = latestReading.waveHeight || latestReading.waterColumnHeight || 0
+  const previousHeight = previousReading.waveHeight || previousReading.waterColumnHeight || 0
+  
+  const heightChange = currentHeight - previousHeight
+  const heightChangePercent = (heightChange / (previousHeight || 1)) * 100
+  
+  const hasSignificantWaveHeight = currentHeight > 2.5
+  const hasRapidIncrease = heightChangePercent > 30
+  const hasLargeMagnitude = currentHeight > 4.0
+  const hasCriticalMagnitude = currentHeight > 6.0
+  
+  // Calculate trend over last few readings
+  if (buoy.readings.length >= 3) {
+    const recent = buoy.readings.slice(-4)
+    const heights = recent.map(r => r.waveHeight || r.waterColumnHeight || 0)
+    const avgHeight = heights.reduce((sum, h) => sum + h, 0) / heights.length
+    
+    if (hasCriticalMagnitude || currentHeight > 7.0) {
+      return { isTsunami: true, severity: 'critical' }
+    } else if (hasLargeMagnitude || (hasSignificantWaveHeight && hasRapidIncrease)) {
+      return { isTsunami: true, severity: 'high' }
+    } else if (hasSignificantWaveHeight || heightChangePercent > 20 || avgHeight > 2.0) {
+      return { isTsunami: true, severity: 'medium' }
+    } else if (currentHeight > 2.0 || heightChangePercent > 15) {
+      return { isTsunami: true, severity: 'medium' }
+    }
+  }
+  
+  if (hasCriticalMagnitude) {
+    return { isTsunami: true, severity: 'critical' }
+  } else if (hasLargeMagnitude) {
+    return { isTsunami: true, severity: 'high' }
+  } else if (hasSignificantWaveHeight) {
+    return { isTsunami: true, severity: 'medium' }
+  }
+  
+  return { isTsunami: false, severity: 'normal' }
+}
 
 async function fetchStationMetadata(stationId: string): Promise<NOAAStationMetadata | null> {
   try {
@@ -189,7 +236,25 @@ function generateMockReading(station: TsunamiStation, baseTime: Date, tsunamiEve
 }
 
 export async function GET() {
+  const startTime = Date.now()
+  
   try {
+    console.log('🌊 Fetching buoy data with caching (Vercel serverless)...')
+    
+    // Check cache first
+    const cachedData = await buoyCacheManager.getBuoyData()
+    if (cachedData) {
+      console.log(`⚡ Serving ${cachedData.data.length} buoys from cache`)
+      return NextResponse.json(cachedData.data, {
+        headers: {
+          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+          'X-Cache-Status': 'HIT'
+        }
+      })
+    }
+    
+    console.log('📡 Cache miss - fetching fresh data from NOAA...')
+    
     console.log('Loading stations from JSON file...')
     const stations = await loadStations()
     console.log(`Loaded ${stations.length} stations`)
@@ -220,44 +285,76 @@ export async function GET() {
     
     console.log(`Filtered to ${oceanicStations.length} oceanic stations`)
     
-    const buoyPromises = oceanicStations.map(async (station: TsunamiStation, index: number) => {
-      // Add small delay between requests to be respectful to NOAA servers
-      await new Promise(resolve => setTimeout(resolve, index * 100))
+    // Limit the number of stations for Vercel's serverless timeout
+    const maxStations = process.env.VERCEL ? 50 : oceanicStations.length
+    const limitedStations = oceanicStations.slice(0, maxStations)
+    
+    if (process.env.VERCEL) {
+      console.log(`⚡ Limited to ${maxStations} stations for Vercel deployment`)
+    }
+    
+    const buoyPromises = limitedStations.map(async (station: TsunamiStation, index: number) => {
+      // Reduce delay for Vercel to avoid timeouts
+      const delay = process.env.VERCEL ? index * 50 : index * 100
+      await new Promise(resolve => setTimeout(resolve, delay))
       
-      const [metadata, readings] = await Promise.all([
-        fetchStationMetadata(station.id),
-        fetchStationData(station.id)
-      ])
-      
-      // Fallback to mock data if real data unavailable
-      let finalReadings = readings
-      if (readings.length === 0) {
-        finalReadings = []
-        // Generate last 24 hours of mock data
-        for (let i = 0; i < 48; i++) {
-          const time = new Date(Date.now() - i * 30 * 60 * 1000) // Every 30 minutes
-          finalReadings.push(generateMockReading(station, time, tsunamiEvent))
+      try {
+        const [metadata, readings] = await Promise.all([
+          Promise.race([
+            fetchStationMetadata(station.id),
+            new Promise<null>(resolve => setTimeout(() => resolve(null), 5000)) // 5s timeout
+          ]),
+          Promise.race([
+            fetchStationData(station.id),
+            new Promise<NOAABuoyReading[]>(resolve => setTimeout(() => resolve([]), 5000)) // 5s timeout
+          ])
+        ])
+        
+        // Fallback to mock data if real data unavailable
+        let finalReadings = readings
+        if (readings.length === 0) {
+          finalReadings = []
+          // Generate last 24 hours of mock data
+          for (let i = 0; i < 48; i++) {
+            const time = new Date(Date.now() - i * 30 * 60 * 1000) // Every 30 minutes
+            finalReadings.push(generateMockReading(station, time, tsunamiEvent))
+          }
+          finalReadings.reverse()
         }
-        finalReadings.reverse()
+        
+        const buoyData: NOAABuoyData = {
+          id: station.id,
+          name: metadata?.name || station.name,
+          location: {
+            latitude: station.lat,
+            longitude: station.lon
+          },
+          owner: metadata?.owner || 'NOAA NDBC',
+          type: metadata?.type || 'Ocean Buoy',
+          program: 'DART/NDBC Tsunami Warning Network',
+          status: finalReadings.length > 0 ? 'active' : 'inactive',
+          readings: finalReadings,
+          lastUpdate: finalReadings.length > 0 ? finalReadings[finalReadings.length - 1].timestamp : new Date(),
+          description: `Tsunami monitoring station ${station.id}`
+        }
+        
+        return buoyData
+      } catch (error) {
+        console.warn(`Failed to fetch station ${station.id}:`, error)
+        // Return minimal buoy data on error
+        return {
+          id: station.id,
+          name: station.name,
+          location: { latitude: station.lat, longitude: station.lon },
+          owner: 'NOAA NDBC',
+          type: 'Ocean Buoy',
+          program: 'DART/NDBC Tsunami Warning Network',
+          status: 'inactive',
+          readings: [],
+          lastUpdate: new Date(),
+          description: `Tsunami monitoring station ${station.id}`
+        } as NOAABuoyData
       }
-      
-      const buoyData: NOAABuoyData = {
-        id: station.id,
-        name: metadata?.name || station.name,
-        location: {
-          latitude: station.lat,
-          longitude: station.lon
-        },
-        owner: metadata?.owner || 'NOAA NDBC',
-        type: metadata?.type || 'Ocean Buoy',
-        program: 'DART/NDBC Tsunami Warning Network',
-        status: finalReadings.length > 0 ? 'active' : 'inactive',
-        readings: finalReadings,
-        lastUpdate: finalReadings.length > 0 ? finalReadings[finalReadings.length - 1].timestamp : new Date(),
-        description: `Tsunami monitoring station ${station.id}`
-      }
-      
-      return buoyData
     })
     
     const buoyData = await Promise.all(buoyPromises)
@@ -269,12 +366,61 @@ export async function GET() {
       return typeof lat === 'number' && typeof lon === 'number' && Math.abs(lat) > 0 && Math.abs(lon) > 0
     })
 
-    return NextResponse.json(visibleBuoys)
+    const fetchDuration = Date.now() - startTime
+    console.log(`✅ Fetched ${visibleBuoys.length} buoys in ${fetchDuration}ms`)
+
+    // Cache the fresh data
+    await buoyCacheManager.setBuoyData(visibleBuoys, fetchDuration)
+    
+    // Update buoy status cache
+    const statusPromises = visibleBuoys.map(async (buoy) => {
+      const status = detectTsunamiStatus(buoy)
+      const latestReading = buoy.readings[buoy.readings.length - 1]
+      if (latestReading) {
+        await buoyCacheManager.updateBuoyStatus(
+          buoy.id,
+          status.severity,
+          status.isTsunami,
+          latestReading.waveHeight || 0,
+          buoy.location
+        )
+      }
+    })
+    
+    await Promise.all(statusPromises)
+    console.log(`💾 Updated status cache for ${visibleBuoys.length} buoys`)
+
+    return NextResponse.json(visibleBuoys, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+        'X-Cache-Status': 'MISS',
+        'X-Fetch-Duration': fetchDuration.toString()
+      }
+    })
   } catch (error) {
     console.error('Error fetching NOAA buoy data:', error)
+    
+    // Try to return cached data even if stale in case of error
+    const staleCache = await buoyCacheManager.getBuoyData()
+    if (staleCache) {
+      console.log('⚠️ Returning stale cache data due to error')
+      return NextResponse.json(staleCache.data, {
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+          'X-Cache-Status': 'STALE',
+          'X-Error': 'Fresh fetch failed, serving stale data'
+        }
+      })
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to fetch NOAA buoy data' },
-      { status: 500 }
+      { error: 'Failed to fetch NOAA buoy data', timestamp: new Date().toISOString() },
+      { 
+        status: 500,
+        headers: {
+          'X-Error': 'No data available'
+        }
+      }
     )
   }
 }
