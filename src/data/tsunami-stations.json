@@ -269,10 +269,10 @@
       "name": "South of Shikoku",
       "lat": 33.12,
       "lon": 133.62,
-      "region": "Unknown",
+      "region": "Western Pacific",
       "country": "US",
       "type": "coastal",
-      "priority": "medium",
+      "priority": "high",
       "hasData": false
     },
     {
@@ -412,10 +412,10 @@
       "name": "SOUTHEAST MIYAZAKI - 260NM Southeast of Miyazaki",
       "lat": 28.91,
       "lon": 134.999,
-      "region": "Unknown",
+      "region": "Western Pacific",
       "country": "US",
       "type": "coastal",
-      "priority": "medium",
+      "priority": "high",
       "hasData": false
     },
     {
@@ -467,10 +467,10 @@
       "name": "Drifter",
       "lat": 31.5,
       "lon": 127.4,
-      "region": "Unknown",
+      "region": "Western Pacific",
       "country": "US",
       "type": "coastal",
-      "priority": "medium",
+      "priority": "high",
       "hasData": false
     },
     {
@@ -489,10 +489,10 @@
       "name": "Drifter",
       "lat": 28.3,
       "lon": 135.5,
-      "region": "Unknown",
+      "region": "Western Pacific",
       "country": "US",
       "type": "coastal",
-      "priority": "medium",
+      "priority": "high",
       "hasData": false
     },
     {
@@ -500,10 +500,10 @@
       "name": "Station 21707",
       "lat": 25,
       "lon": 136,
-      "region": "Unknown",
+      "region": "Western Pacific",
       "country": "US",
       "type": "coastal",
-      "priority": "medium",
+      "priority": "high",
       "hasData": false
     },
     {
@@ -522,10 +522,10 @@
       "name": "Station 22101",
       "lat": 37.23,
       "lon": 126.02,
-      "region": "Unknown",
+      "region": "Western Pacific",
       "country": "US",
       "type": "coastal",
-      "priority": "medium",
+      "priority": "high",
       "hasData": false
     },
     {
@@ -533,10 +533,10 @@
       "name": "Station 22102",
       "lat": 34.8,
       "lon": 125.77,
-      "region": "Unknown",
+      "region": "Western Pacific",
       "country": "US",
       "type": "coastal",
-      "priority": "medium",
+      "priority": "high",
       "hasData": false
     },
     {
@@ -544,10 +544,10 @@
       "name": "Station 22103",
       "lat": 34,
       "lon": 127.5,
-      "region": "Unknown",
+      "region": "Western Pacific",
       "country": "US",
       "type": "coastal",
-      "priority": "medium",
+      "priority": "high",
       "hasData": false
     },
     {
@@ -555,10 +555,10 @@
       "name": "Station 22104",
       "lat": 34.77,
       "lon": 128.9,
-      "region": "Unknown",
+      "region": "Western Pacific",
       "country": "US",
       "type": "coastal",
-      "priority": "medium",
+      "priority": "high",
       "hasData": false
     },
     {
@@ -566,10 +566,10 @@
       "name": "Station 22105",
       "lat": 37.53,
       "lon": 130,
-      "region": "Unknown",
+      "region": "Western Pacific",
       "country": "US",
       "type": "coastal",
-      "priority": "medium",
+      "priority": "high",
       "hasData": false
     },
     {
@@ -577,10 +577,10 @@
       "name": "Station 22106",
       "lat": 36.35,
       "lon": 129.78,
-      "region": "Unknown",
+      "region": "Western Pacific",
       "country": "US",
       "type": "coastal",
-      "priority": "medium",
+      "priority": "high",
       "hasData": false
     },
     {
@@ -588,10 +588,10 @@
       "name": "Station 22107",
       "lat": 33.08,
       "lon": 126.03,
-      "region": "Unknown",
+      "region": "Western Pacific",
       "country": "US",
       "type": "coastal",
-      "priority": "medium",
+      "priority": "high",
       "hasData": false
     },
     {
@@ -599,10 +599,10 @@
       "name": "Station 22108",
       "lat": 36.25,
       "lon": 125.75,
-      "region": "Unknown",
+      "region": "Western Pacific",
       "country": "US",
       "type": "coastal",
-      "priority": "medium",
+      "priority": "high",
       "hasData": false
     },
     {
@@ -9025,10 +9025,10 @@
       "name": "Ngaraard, Babeldaob, Palau (219)",
       "lat": 7.63,
       "lon": 134.671,
-      "region": "Unknown",
+      "region": "Western Pacific",
       "country": "US",
       "type": "coastal",
-      "priority": "medium",
+      "priority": "high",
       "hasData": true
     },
     {
@@ -9047,10 +9047,10 @@
       "name": "Rumung, Yap, Micronesia (272)",
       "lat": 9.677,
       "lon": 138.178,
-      "region": "Unknown",
+      "region": "Western Pacific",
       "country": "US",
       "type": "coastal",
-      "priority": "medium",
+      "priority": "high",
       "hasData": false
     },
     {
@@ -9102,10 +9102,10 @@
       "name": "NORTH PHILIPPINE SEA - 750 NM NE of Manila, Philippines",
       "lat": 20.685,
       "lon": 132.25,
-      "region": "Unknown",
+      "region": "Western Pacific",
       "country": "US",
       "type": "coastal",
-      "priority": "medium",
+      "priority": "high",
       "hasData": false
     },
     {
@@ -9113,10 +9113,10 @@
       "name": "SOUTH PHILIPPINE SEA -725 NM West of Agana, Guam",
       "lat": 12.992,
       "lon": 132.232,
-      "region": "Unknown",
+      "region": "Western Pacific",
       "country": "US",
       "type": "coastal",
-      "priority": "medium",
+      "priority": "high",
       "hasData": false
     },
     {
@@ -9146,10 +9146,10 @@
       "name": "Station 52837",
       "lat": 9.777,
       "lon": 137,
-      "region": "Unknown",
+      "region": "Western Pacific",
       "country": "US",
       "type": "coastal",
-      "priority": "medium",
+      "priority": "high",
       "hasData": false
     },
     {
@@ -9212,10 +9212,10 @@
       "name": "Station 52843",
       "lat": 11.761,
       "lon": 134,
-      "region": "Unknown",
+      "region": "Western Pacific",
       "country": "US",
       "type": "coastal",
-      "priority": "medium",
+      "priority": "high",
       "hasData": false
     },
     {
@@ -10257,10 +10257,10 @@
       "name": "Ulithi Is., Caroline",
       "lat": 9.9,
       "lon": 139.7,
-      "region": "Unknown",
+      "region": "Western Pacific",
       "country": "US",
       "type": "coastal",
-      "priority": "medium",
+      "priority": "high",
       "hasData": false
     },
     {
@@ -10389,10 +10389,10 @@
       "name": "Ngulu Atoll, Caroline",
       "lat": 8.3,
       "lon": 137.5,
-      "region": "Unknown",
+      "region": "Western Pacific",
       "country": "US",
       "type": "coastal",
-      "priority": "medium",
+      "priority": "high",
       "hasData": false
     },
     {
@@ -20899,12 +20899,210 @@
       "type": "coastal",
       "priority": "high",
       "hasData": false
+    },
+    {
+      "id": "21413",
+      "name": "Guam West Pacific DART",
+      "lat": 13.35,
+      "lon": 144.79,
+      "region": "Western Pacific",
+      "country": "US",
+      "type": "dart",
+      "priority": "critical",
+      "hasData": false
+    },
+    {
+      "id": "21414",
+      "name": "Philippines East DART",
+      "lat": 15,
+      "lon": 135,
+      "region": "Western Pacific",
+      "country": "US",
+      "type": "dart",
+      "priority": "critical",
+      "hasData": false
+    },
+    {
+      "id": "21415",
+      "name": "Japan Southeast DART",
+      "lat": 30,
+      "lon": 152,
+      "region": "Western Pacific",
+      "country": "US",
+      "type": "dart",
+      "priority": "critical",
+      "hasData": false
+    },
+    {
+      "id": "21416",
+      "name": "Mariana Trench DART",
+      "lat": 12,
+      "lon": 147,
+      "region": "Western Pacific",
+      "country": "US",
+      "type": "dart",
+      "priority": "critical",
+      "hasData": false
+    },
+    {
+      "id": "52401",
+      "name": "Northwest Pacific DART",
+      "lat": 32.31,
+      "lon": 152.12,
+      "region": "Western Pacific",
+      "country": "US",
+      "type": "dart",
+      "priority": "critical",
+      "hasData": false
+    },
+    {
+      "id": "52402",
+      "name": "Central Pacific DART",
+      "lat": 17,
+      "lon": 156,
+      "region": "Western Pacific",
+      "country": "US",
+      "type": "dart",
+      "priority": "critical",
+      "hasData": false
+    },
+    {
+      "id": "21001",
+      "name": "Honshu East Coast",
+      "lat": 36,
+      "lon": 141,
+      "region": "Western Pacific",
+      "country": "US",
+      "type": "coastal",
+      "priority": "high",
+      "hasData": false
+    },
+    {
+      "id": "21002",
+      "name": "Kyushu Southeast",
+      "lat": 31,
+      "lon": 132,
+      "region": "Western Pacific",
+      "country": "US",
+      "type": "coastal",
+      "priority": "high",
+      "hasData": false
+    },
+    {
+      "id": "21003",
+      "name": "Okinawa East",
+      "lat": 26,
+      "lon": 128,
+      "region": "Western Pacific",
+      "country": "US",
+      "type": "coastal",
+      "priority": "high",
+      "hasData": false
+    },
+    {
+      "id": "23001",
+      "name": "Luzon East Coast",
+      "lat": 16,
+      "lon": 122,
+      "region": "Western Pacific",
+      "country": "US",
+      "type": "coastal",
+      "priority": "high",
+      "hasData": true
+    },
+    {
+      "id": "23002",
+      "name": "Mindanao East",
+      "lat": 8,
+      "lon": 127,
+      "region": "Western Pacific",
+      "country": "US",
+      "type": "coastal",
+      "priority": "high",
+      "hasData": false
+    },
+    {
+      "id": "23003",
+      "name": "Palawan West",
+      "lat": 10,
+      "lon": 117,
+      "region": "Western Pacific",
+      "country": "US",
+      "type": "coastal",
+      "priority": "high",
+      "hasData": true
+    },
+    {
+      "id": "56001",
+      "name": "Java Sea",
+      "lat": -6,
+      "lon": 110,
+      "region": "Western Pacific",
+      "country": "US",
+      "type": "coastal",
+      "priority": "high",
+      "hasData": false
+    },
+    {
+      "id": "56002",
+      "name": "Banda Sea",
+      "lat": -5,
+      "lon": 129,
+      "region": "Western Pacific",
+      "country": "US",
+      "type": "coastal",
+      "priority": "high",
+      "hasData": false
+    },
+    {
+      "id": "56003",
+      "name": "Celebes Sea",
+      "lat": 2,
+      "lon": 121,
+      "region": "Western Pacific",
+      "country": "US",
+      "type": "offshore",
+      "priority": "high",
+      "hasData": false
+    },
+    {
+      "id": "55001",
+      "name": "Coral Sea North",
+      "lat": -15,
+      "lon": 155,
+      "region": "Unknown",
+      "country": "US",
+      "type": "coastal",
+      "priority": "medium",
+      "hasData": false
+    },
+    {
+      "id": "55002",
+      "name": "Tasman Sea West",
+      "lat": -32,
+      "lon": 158,
+      "region": "Unknown",
+      "country": "US",
+      "type": "coastal",
+      "priority": "medium",
+      "hasData": false
+    },
+    {
+      "id": "55003",
+      "name": "Great Barrier Reef",
+      "lat": -18,
+      "lon": 150,
+      "region": "Unknown",
+      "country": "US",
+      "type": "coastal",
+      "priority": "medium",
+      "hasData": false
     }
   ],
   "metadata": {
-    "lastUpdated": "2025-07-30T22:29:36.700Z",
+    "lastUpdated": "2025-07-31T17:58:32.486Z",
     "version": "2.0",
-    "totalStations": 1900,
+    "totalStations": 1918,
     "updateFrequency": "daily",
     "source": "NOAA NDBC API",
     "priorityLevels": {

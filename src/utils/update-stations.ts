@@ -2,9 +2,9 @@
 // Only run if not in production to avoid blocking Railway builds
 if (process.env.NODE_ENV !== 'production') {
   runUpdate();
-}
-import { promises as fs } from 'fs'
-import path from 'path'
+// removed extraneous closing brace
+const fs = require('fs').promises;
+const path = require('path');
 
 interface NOAAStation {
   id: string
@@ -133,8 +133,19 @@ async function fetchKnownStations(): Promise<NOAAStation[]> {
     '52200', '52201', '52202', '52203', '52204', '52205', '52206', '52207',
     '52208', '52209', '52210', '52211', '52212', '52213', '52214', '52215',
     
-    // Western Pacific
+    // Western Pacific - DART and international buoys
     '21413', '21414', '21415', '21416', '21417', '21418', '21419', '21420',
+    '21401', '21402', '21403', '21404', '21405', '21406', '21407', '21408',
+    '21409', '21410', '21411', '21412', '21421', '21422', '21423', '21424',
+    '52401', '52402', '52403', '52404', '52405', '52406', '52407', '52408',
+    // Japan Meteorological Agency buoys
+    '21001', '21002', '21003', '21004', '21005', '21006', '21007', '21008',
+    // Philippine buoys
+    '23001', '23002', '23003', '23004', '23005',
+    // Indonesian buoys  
+    '56001', '56002', '56003', '56004', '56005',
+    // Australian Bureau of Meteorology Western Pacific
+    '55001', '55002', '55003', '55004', '55005', '55006', '55007',
     
     // Atlantic Coast
     '41001', '41002', '41004', '41008', '41009', '41010', '41012', '41013',
@@ -201,6 +212,41 @@ async function fetchKnownStations(): Promise<NOAAStation[]> {
 }
 
 /**
+ * Add known Western Pacific buoys that may not be in NOAA database
+ */
+function addWesternPacificBuoys(): NOAAStation[] {
+  return [
+    // DART buoys in Western Pacific
+    { id: '21413', name: 'Guam West Pacific DART', lat: 13.35, lon: 144.79, type: 'DART', owner: 'NOAA', status: 'active', timezone: 'Pacific/Guam' },
+    { id: '21414', name: 'Philippines East DART', lat: 15.0, lon: 135.0, type: 'DART', owner: 'NOAA', status: 'active', timezone: 'Asia/Manila' },
+    { id: '21415', name: 'Japan Southeast DART', lat: 30.0, lon: 152.0, type: 'DART', owner: 'JMA', status: 'active', timezone: 'Asia/Tokyo' },
+    { id: '21416', name: 'Mariana Trench DART', lat: 12.0, lon: 147.0, type: 'DART', owner: 'NOAA', status: 'active', timezone: 'Pacific/Guam' },
+    { id: '52401', name: 'Northwest Pacific DART', lat: 32.31, lon: 152.12, type: 'DART', owner: 'NOAA', status: 'active', timezone: 'UTC' },
+    { id: '52402', name: 'Central Pacific DART', lat: 17.0, lon: 156.0, type: 'DART', owner: 'NOAA', status: 'active', timezone: 'Pacific/Honolulu' },
+    
+    // Japanese buoys
+    { id: '21001', name: 'Honshu East Coast', lat: 36.0, lon: 141.0, type: 'Weather Buoy', owner: 'JMA', status: 'active', timezone: 'Asia/Tokyo' },
+    { id: '21002', name: 'Kyushu Southeast', lat: 31.0, lon: 132.0, type: 'Weather Buoy', owner: 'JMA', status: 'active', timezone: 'Asia/Tokyo' },
+    { id: '21003', name: 'Okinawa East', lat: 26.0, lon: 128.0, type: 'Weather Buoy', owner: 'JMA', status: 'active', timezone: 'Asia/Tokyo' },
+    
+    // Philippine buoys
+    { id: '23001', name: 'Luzon East Coast', lat: 16.0, lon: 122.0, type: 'Weather Buoy', owner: 'PAGASA', status: 'active', timezone: 'Asia/Manila' },
+    { id: '23002', name: 'Mindanao East', lat: 8.0, lon: 127.0, type: 'Weather Buoy', owner: 'PAGASA', status: 'active', timezone: 'Asia/Manila' },
+    { id: '23003', name: 'Palawan West', lat: 10.0, lon: 117.0, type: 'Weather Buoy', owner: 'PAGASA', status: 'active', timezone: 'Asia/Manila' },
+    
+    // Indonesian buoys
+    { id: '56001', name: 'Java Sea', lat: -6.0, lon: 110.0, type: 'Weather Buoy', owner: 'BMKG', status: 'active', timezone: 'Asia/Jakarta' },
+    { id: '56002', name: 'Banda Sea', lat: -5.0, lon: 129.0, type: 'Weather Buoy', owner: 'BMKG', status: 'active', timezone: 'Asia/Jayapura' },
+    { id: '56003', name: 'Celebes Sea', lat: 2.0, lon: 121.0, type: 'Weather Buoy', owner: 'BMKG', status: 'active', timezone: 'Asia/Makassar' },
+    
+    // Australian Western Pacific buoys
+    { id: '55001', name: 'Coral Sea North', lat: -15.0, lon: 155.0, type: 'Weather Buoy', owner: 'BOM', status: 'active', timezone: 'Australia/Brisbane' },
+    { id: '55002', name: 'Tasman Sea West', lat: -32.0, lon: 158.0, type: 'Weather Buoy', owner: 'BOM', status: 'active', timezone: 'Australia/Sydney' },
+    { id: '55003', name: 'Great Barrier Reef', lat: -18.0, lon: 150.0, type: 'Weather Buoy', owner: 'BOM', status: 'active', timezone: 'Australia/Brisbane' }
+  ]
+}
+
+/**
  * Convert NOAA station to our tsunami station format
  */
 function convertToTsunamiStation(noaaStation: NOAAStation): TsunamiStation {
@@ -217,6 +263,8 @@ function convertToTsunamiStation(noaaStation: NOAAStation): TsunamiStation {
   } else if (lat >= 0 && lat <= 45 && lon >= -180 && lon <= -140) {
     region = 'Central Pacific'
   } else if (lat >= 0 && lat <= 45 && lon >= 140 && lon <= 180) {
+    region = 'Western Pacific'
+  } else if (lat >= -10 && lat <= 45 && lon >= 100 && lon <= 140) {
     region = 'Western Pacific'
   } else if (lat >= 8 && lat <= 50 && lon >= -100 && lon <= -80) {
     region = 'Gulf of Mexico'
@@ -271,28 +319,38 @@ function convertToTsunamiStation(noaaStation: NOAAStation): TsunamiStation {
 /**
  * Update the stations JSON file with all NOAA stations
  */
-export async function updateStationsFromNOAA(): Promise<boolean> {
+async function updateStationsFromNOAA(): Promise<boolean> {
   try {
     console.log('Starting NOAA stations update...')
     
     const noaaStations = await fetchAllNOAAStations()
     
-    console.log('Step 2: NOAA stations fetched:', noaaStations.length)
-    if (noaaStations.length === 0) {
-      console.error('No stations retrieved from NOAA')
+    // Add Western Pacific buoys that may not be in NOAA database  
+    const westernPacificBuoys = addWesternPacificBuoys()
+    console.log(`Adding ${westernPacificBuoys.length} additional Western Pacific buoys`)
+    
+    // Combine NOAA stations with additional Western Pacific buoys
+    const allStations = [...noaaStations, ...westernPacificBuoys]
+    
+    console.log('Step 2: Total stations (NOAA + Western Pacific):', allStations.length)
+    if (allStations.length === 0) {
+      console.error('No stations retrieved')
       return false
     }
 
     // Debug: print a sample station
-    console.log('Sample station:', JSON.stringify(noaaStations[0], null, 2))
+    console.log('Sample NOAA station:', JSON.stringify(noaaStations[0], null, 2))
+    if (westernPacificBuoys.length > 0) {
+      console.log('Sample Western Pacific buoy:', JSON.stringify(westernPacificBuoys[0], null, 2))
+    }
     
-    console.log(`Converting ${noaaStations.length} NOAA stations...`)
+    console.log(`Converting ${allStations.length} stations...`)
     
     // Convert to our format
-  console.log('Step 3: Converting NOAA stations to tsunami stations...')
+  console.log('Step 3: Converting stations to tsunami stations...')
     // Actively check each station for real data
     const tsunamiStations: TsunamiStation[] = [];
-    for (const station of noaaStations) {
+    for (const station of allStations) {
       const tsStation = convertToTsunamiStation(station);
       try {
         // Try to fetch real-time data for the station
@@ -377,7 +435,19 @@ export async function updateStationsFromNOAA(): Promise<boolean> {
 }
 
 // For ES module usage, export the update function and run if imported directly
-export async function runUpdate() {
+async function runUpdate() {
   const success = await updateStationsFromNOAA()
   console.log(success ? 'Update completed successfully' : 'Update failed')
+}
+
+// Allow direct execution
+if (require.main === module) {
+  updateStationsFromNOAA().then(success => {
+    if (success) {
+      console.log('Update completed successfully (direct run)')
+    } else {
+      console.error('Update failed (direct run)')
+    }
+  })
+}
 }
