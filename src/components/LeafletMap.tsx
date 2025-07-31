@@ -105,23 +105,6 @@ export default function LeafletMap({ buoys, selectedBuoy, onBuoySelect, tsunamiD
       iconAnchor: [size / 2, size / 2]
     })
   }, [])
-    const colors = {
-      normal: '#22c55e',
-      medium: '#eab308', 
-      high: '#f59e0b',
-      critical: '#dc2626'
-    }
-    
-    const color = colors[severity as keyof typeof colors] || colors.normal
-    const size = isSelected ? 20 : 16
-    
-    return L.divIcon({
-      html: `<div style="background-color: ${color}; width: ${size}px; height: ${size}px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
-      className: 'custom-buoy-marker',
-      iconSize: [size, size],
-      iconAnchor: [size / 2, size / 2]
-    })
-  }, [])
 
   const formatDate = useCallback((timestamp: string | Date) => {
     const date = new Date(timestamp)
@@ -155,9 +138,11 @@ export default function LeafletMap({ buoys, selectedBuoy, onBuoySelect, tsunamiD
 
       // Create markers layer group
       const markersGroup = L.layerGroup().addTo(map)
+      const dangerZonesGroup = L.layerGroup().addTo(map)
 
       mapRef.current = map
       markersRef.current = markersGroup
+      dangerZonesRef.current = dangerZonesGroup
     } catch (error) {
       console.error('Error initializing map:', error)
     }
@@ -167,26 +152,35 @@ export default function LeafletMap({ buoys, selectedBuoy, onBuoySelect, tsunamiD
         mapRef.current.remove()
         mapRef.current = null
         markersRef.current = null
+        dangerZonesRef.current = null
       }
     }
   }, [isClient])
 
   // Update markers when buoys change
   useEffect(() => {
-    if (!mapRef.current || !markersRef.current || !isClient) return
+    if (!mapRef.current || !markersRef.current || !dangerZonesRef.current || !isClient) return
 
     try {
-      // Clear existing markers
+      // Clear existing markers and danger zones
       markersRef.current.clearLayers()
+      dangerZonesRef.current.clearLayers()
 
-      // Add new markers
-      buoys.forEach((buoy) => {
+      // Add new markers and danger zones
+      filteredBuoys.forEach((buoy) => {
         if (!buoy.location?.latitude || !buoy.location?.longitude) return
 
         const tsunamiStatus = tsunamiDetector(buoy)
         const isSelected = selectedBuoy?.id === buoy.id
-        const icon = createBuoyIcon(tsunamiStatus.severity, isSelected)
         
+        // Add danger zone first (so it appears under markers)
+        const dangerZone = createDangerZone(buoy, tsunamiStatus.severity)
+        if (dangerZone) {
+          dangerZonesRef.current?.addLayer(dangerZone)
+        }
+        
+        // Add marker
+        const icon = createBuoyIcon(tsunamiStatus.severity, isSelected)
         const latestReading = buoy.readings.length > 0 ? buoy.readings[buoy.readings.length - 1] : null
         const waveHeight = latestReading?.waveHeight || 0
         
@@ -213,6 +207,7 @@ export default function LeafletMap({ buoys, selectedBuoy, onBuoySelect, tsunamiD
                     'bg-yellow-100 border border-yellow-300 text-yellow-800'
                   } rounded font-medium">
                     ⚠️ TSUNAMI ALERT: ${tsunamiStatus.severity.toUpperCase()}
+                    ${dangerZone ? `<br>🔴 Danger Zone: ${tsunamiStatus.severity === 'critical' ? '200km' : tsunamiStatus.severity === 'high' ? '100km' : '50km'} radius` : ''}
                   </div>
                 ` : ''}
               </div>
@@ -225,7 +220,7 @@ export default function LeafletMap({ buoys, selectedBuoy, onBuoySelect, tsunamiD
     } catch (error) {
       console.error('Error updating markers:', error)
     }
-  }, [buoys, createBuoyIcon, formatDate, onBuoySelect, tsunamiDetector, selectedBuoy, isClient])
+  }, [filteredBuoys, createBuoyIcon, createDangerZone, formatDate, onBuoySelect, tsunamiDetector, selectedBuoy, isClient])
 
   // Handle selected buoy centering
   useEffect(() => {
@@ -267,15 +262,24 @@ export default function LeafletMap({ buoys, selectedBuoy, onBuoySelect, tsunamiD
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-yellow-500 border-2 border-white shadow"></div>
-            <span className="text-gray-700">Medium Alert</span>
+            <span className="text-gray-700">Medium Alert (50km zone)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-orange-500 border-2 border-white shadow"></div>
-            <span className="text-gray-700">High Alert</span>
+            <span className="text-gray-700">High Alert (100km zone)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-red-500 border-2 border-white shadow"></div>
-            <span className="text-gray-700">Critical Alert</span>
+            <span className="text-gray-700">Critical Alert (200km zone)</span>
+          </div>
+        </div>
+        <div className="mt-2 pt-2 border-t border-gray-300 text-xs text-gray-600">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-full bg-red-200 border border-red-400 opacity-60"></div>
+            <span>Tsunami danger zones</span>
+          </div>
+          <div className="mt-1 text-gray-500">
+            Showing oceanic buoys only
           </div>
         </div>
       </div>

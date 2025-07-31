@@ -1,11 +1,24 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import LeafletMapNew from '@/components/LeafletMapNew'
+import dynamic from 'next/dynamic'
 import BuoyDataPanel from '@/components/BuoyDataPanel'
 import TsunamiAlert from '@/components/TsunamiAlert'
 import TsunamiControlPanel from '@/components/TsunamiControlPanel'
 import { NOAABuoyData } from '@/types/buoy'
+
+// Dynamically import the map component to avoid SSR issues
+const LeafletMap = dynamic(() => import('@/components/LeafletMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-slate-800">
+      <div className="text-center">
+        <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+        <p className="text-slate-300">Loading interactive map...</p>
+      </div>
+    </div>
+  ),
+})
 
 export default function Home() {
   const [buoyData, setBuoyData] = useState<NOAABuoyData[]>([])
@@ -173,7 +186,7 @@ export default function Home() {
               </div>
             </div>
           ) : (
-            <LeafletMapNew
+            <LeafletMap
               buoys={buoyData}
               selectedBuoy={selectedBuoy}
               onBuoySelect={setSelectedBuoy}
