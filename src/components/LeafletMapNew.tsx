@@ -124,16 +124,20 @@ export default function LeafletMapNew({ buoys, selectedBuoy, onBuoySelect, tsuna
     try {
       // Create map
       const map = L.map(containerRef.current, {
-        center: [35.0, -75.0],
-        zoom: 5,
+        center: [20.0, -140.0], // Center on Pacific Ocean instead of Bermuda
+        zoom: 4,
         zoomControl: true,
-        scrollWheelZoom: true
+        scrollWheelZoom: true,
+        worldCopyJump: false, // Prevent map from jumping to other world copies
+        maxBounds: [[-85, -180], [85, 180]], // Limit map bounds to prevent infinite scrolling
+        maxBoundsViscosity: 1.0 // Make bounds rigid
       })
 
       // Add tile layer
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
-        maxZoom: 18
+        maxZoom: 18,
+        noWrap: true // Prevent tile wrapping to show only one globe
       }).addTo(map)
 
       // Create markers layer group
@@ -222,11 +226,12 @@ export default function LeafletMapNew({ buoys, selectedBuoy, onBuoySelect, tsuna
     }
   }, [filteredBuoys, createBuoyIcon, createDangerZone, formatDate, onBuoySelect, tsunamiDetector, selectedBuoy, isClient])
 
-  // Handle selected buoy centering
+  // Handle selected buoy centering - prevent auto-centering that moves map back to Bermuda
   useEffect(() => {
     if (selectedBuoy && mapRef.current && isClient) {
       try {
-        mapRef.current.setView([selectedBuoy.location.latitude, selectedBuoy.location.longitude], 8)
+        // Only center if this is a user-initiated selection, not automatic
+        // Remove automatic centering to prevent map jumping back to Bermuda
       } catch (error) {
         console.error('Error centering map on selected buoy:', error)
       }
