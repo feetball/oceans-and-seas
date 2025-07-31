@@ -21022,17 +21022,6 @@
       "hasData": false
     },
     {
-      "id": "23003",
-      "name": "Palawan West",
-      "lat": 10,
-      "lon": 117,
-      "region": "Western Pacific",
-      "country": "US",
-      "type": "coastal",
-      "priority": "high",
-      "hasData": true
-    },
-    {
       "id": "56001",
       "name": "Java Sea",
       "lat": -6,
@@ -21040,28 +21029,6 @@
       "region": "Western Pacific",
       "country": "US",
       "type": "coastal",
-      "priority": "high",
-      "hasData": false
-    },
-    {
-      "id": "56002",
-      "name": "Banda Sea",
-      "lat": -5,
-      "lon": 129,
-      "region": "Western Pacific",
-      "country": "US",
-      "type": "coastal",
-      "priority": "high",
-      "hasData": false
-    },
-    {
-      "id": "56003",
-      "name": "Celebes Sea",
-      "lat": 2,
-      "lon": 121,
-      "region": "Western Pacific",
-      "country": "US",
-      "type": "offshore",
       "priority": "high",
       "hasData": false
     },
@@ -21075,34 +21042,12 @@
       "type": "coastal",
       "priority": "medium",
       "hasData": false
-    },
-    {
-      "id": "55002",
-      "name": "Tasman Sea West",
-      "lat": -32,
-      "lon": 158,
-      "region": "Unknown",
-      "country": "US",
-      "type": "coastal",
-      "priority": "medium",
-      "hasData": false
-    },
-    {
-      "id": "55003",
-      "name": "Great Barrier Reef",
-      "lat": -18,
-      "lon": 150,
-      "region": "Unknown",
-      "country": "US",
-      "type": "coastal",
-      "priority": "medium",
-      "hasData": false
     }
   ],
   "metadata": {
-    "lastUpdated": "2025-07-31T17:58:32.486Z",
+    "lastUpdated": "2025-07-31T19:59:34.424Z",
     "version": "2.0",
-    "totalStations": 1918,
+    "totalStations": 1913,
     "updateFrequency": "daily",
     "source": "NOAA NDBC API",
     "priorityLevels": {

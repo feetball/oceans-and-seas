@@ -214,36 +214,29 @@ async function fetchKnownStations(): Promise<NOAAStation[]> {
 /**
  * Add known Western Pacific buoys that may not be in NOAA database
  */
-function addWesternPacificBuoys(): NOAAStation[] {
+function addAllPacificBuoys(): NOAAStation[] {
   return [
-    // DART buoys in Western Pacific
+    // DART buoys (NOAA, US, International)
     { id: '21413', name: 'Guam West Pacific DART', lat: 13.35, lon: 144.79, type: 'DART', owner: 'NOAA', status: 'active', timezone: 'Pacific/Guam' },
     { id: '21414', name: 'Philippines East DART', lat: 15.0, lon: 135.0, type: 'DART', owner: 'NOAA', status: 'active', timezone: 'Asia/Manila' },
     { id: '21415', name: 'Japan Southeast DART', lat: 30.0, lon: 152.0, type: 'DART', owner: 'JMA', status: 'active', timezone: 'Asia/Tokyo' },
     { id: '21416', name: 'Mariana Trench DART', lat: 12.0, lon: 147.0, type: 'DART', owner: 'NOAA', status: 'active', timezone: 'Pacific/Guam' },
     { id: '52401', name: 'Northwest Pacific DART', lat: 32.31, lon: 152.12, type: 'DART', owner: 'NOAA', status: 'active', timezone: 'UTC' },
     { id: '52402', name: 'Central Pacific DART', lat: 17.0, lon: 156.0, type: 'DART', owner: 'NOAA', status: 'active', timezone: 'Pacific/Honolulu' },
-    
-    // Japanese buoys
+    // Add more DART and international Pacific buoys here as needed
+    // Japanese Meteorological Agency (JMA) buoys
     { id: '21001', name: 'Honshu East Coast', lat: 36.0, lon: 141.0, type: 'Weather Buoy', owner: 'JMA', status: 'active', timezone: 'Asia/Tokyo' },
     { id: '21002', name: 'Kyushu Southeast', lat: 31.0, lon: 132.0, type: 'Weather Buoy', owner: 'JMA', status: 'active', timezone: 'Asia/Tokyo' },
     { id: '21003', name: 'Okinawa East', lat: 26.0, lon: 128.0, type: 'Weather Buoy', owner: 'JMA', status: 'active', timezone: 'Asia/Tokyo' },
-    
-    // Philippine buoys
+    // Philippine buoys (PAGASA)
     { id: '23001', name: 'Luzon East Coast', lat: 16.0, lon: 122.0, type: 'Weather Buoy', owner: 'PAGASA', status: 'active', timezone: 'Asia/Manila' },
     { id: '23002', name: 'Mindanao East', lat: 8.0, lon: 127.0, type: 'Weather Buoy', owner: 'PAGASA', status: 'active', timezone: 'Asia/Manila' },
-    { id: '23003', name: 'Palawan West', lat: 10.0, lon: 117.0, type: 'Weather Buoy', owner: 'PAGASA', status: 'active', timezone: 'Asia/Manila' },
-    
-    // Indonesian buoys
+    // Indonesian buoys (BMKG)
     { id: '56001', name: 'Java Sea', lat: -6.0, lon: 110.0, type: 'Weather Buoy', owner: 'BMKG', status: 'active', timezone: 'Asia/Jakarta' },
-    { id: '56002', name: 'Banda Sea', lat: -5.0, lon: 129.0, type: 'Weather Buoy', owner: 'BMKG', status: 'active', timezone: 'Asia/Jayapura' },
-    { id: '56003', name: 'Celebes Sea', lat: 2.0, lon: 121.0, type: 'Weather Buoy', owner: 'BMKG', status: 'active', timezone: 'Asia/Makassar' },
-    
-    // Australian Western Pacific buoys
+    // Australian Bureau of Meteorology (BOM)
     { id: '55001', name: 'Coral Sea North', lat: -15.0, lon: 155.0, type: 'Weather Buoy', owner: 'BOM', status: 'active', timezone: 'Australia/Brisbane' },
-    { id: '55002', name: 'Tasman Sea West', lat: -32.0, lon: 158.0, type: 'Weather Buoy', owner: 'BOM', status: 'active', timezone: 'Australia/Sydney' },
-    { id: '55003', name: 'Great Barrier Reef', lat: -18.0, lon: 150.0, type: 'Weather Buoy', owner: 'BOM', status: 'active', timezone: 'Australia/Brisbane' }
-  ]
+    // Add more Pacific buoys as needed
+  ];
 }
 
 /**
@@ -326,13 +319,10 @@ async function updateStationsFromNOAA(): Promise<boolean> {
     const noaaStations = await fetchAllNOAAStations()
     
     // Add Western Pacific buoys that may not be in NOAA database  
-    const westernPacificBuoys = addWesternPacificBuoys()
-    console.log(`Adding ${westernPacificBuoys.length} additional Western Pacific buoys`)
-    
-    // Combine NOAA stations with additional Western Pacific buoys
-    const allStations = [...noaaStations, ...westernPacificBuoys]
-    
-    console.log('Step 2: Total stations (NOAA + Western Pacific):', allStations.length)
+  const allPacificBuoys = addAllPacificBuoys();
+  console.log(`Adding ${allPacificBuoys.length} additional Pacific buoys`);
+  const allStations = [...noaaStations, ...allPacificBuoys];
+  console.log('Step 2: Total stations (NOAA + Pacific):', allStations.length);
     if (allStations.length === 0) {
       console.error('No stations retrieved')
       return false
@@ -340,8 +330,8 @@ async function updateStationsFromNOAA(): Promise<boolean> {
 
     // Debug: print a sample station
     console.log('Sample NOAA station:', JSON.stringify(noaaStations[0], null, 2))
-    if (westernPacificBuoys.length > 0) {
-      console.log('Sample Western Pacific buoy:', JSON.stringify(westernPacificBuoys[0], null, 2))
+    if (allPacificBuoys.length > 0) {
+      console.log('Sample Pacific buoy:', JSON.stringify(allPacificBuoys[0], null, 2))
     }
     
     console.log(`Converting ${allStations.length} stations...`)
