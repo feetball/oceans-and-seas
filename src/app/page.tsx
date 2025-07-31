@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import Map from '@/components/Map'
+import LeafletMapNew from '@/components/LeafletMapNew'
 import BuoyDataPanel from '@/components/BuoyDataPanel'
 import TsunamiAlert from '@/components/TsunamiAlert'
+import TsunamiControlPanel from '@/components/TsunamiControlPanel'
 import { NOAABuoyData } from '@/types/buoy'
 
 export default function Home() {
@@ -12,8 +13,10 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
+  const [isSimulationActive, setIsSimulationActive] = useState(true) // Default to simulation active
+  const [selectedSimulationEvent, setSelectedSimulationEvent] = useState('mock')
 
-  // Tsunami detection logic
+  // Enhanced tsunami detection logic
   const detectTsunami = useCallback((buoy: NOAABuoyData) => {
     if (buoy.readings.length < 2) return { isTsunami: false, severity: 'normal' as const }
     
@@ -25,26 +28,40 @@ export default function Home() {
     const previousHeight = previousReading.waveHeight || previousReading.waterColumnHeight || 0
     
     const heightChange = currentHeight - previousHeight
-    const heightChangePercent = (heightChange / previousHeight) * 100
+    const heightChangePercent = (heightChange / (previousHeight || 1)) * 100
     
     // Check for multiple warning indicators
-    const hasSignificantWaveHeight = currentHeight > 3.0 // Meters
-    const hasRapidIncrease = heightChangePercent > 50 // 50% increase
-    const hasLargeMagnitude = currentHeight > 5.0 // Very large waves
+    const hasSignificantWaveHeight = currentHeight > 2.5 // Lowered threshold for better detection
+    const hasRapidIncrease = heightChangePercent > 30 // 30% increase
+    const hasLargeMagnitude = currentHeight > 4.0 // Very large waves
+    const hasCriticalMagnitude = currentHeight > 6.0 // Critical level waves
     
-    // Calculate trend over last few readings
+    // Calculate trend over last few readings for better detection
     if (buoy.readings.length >= 3) {
-      const recent = buoy.readings.slice(-3)
-      const trend = recent.map(r => r.waveHeight || r.waterColumnHeight || 0)
-      const isIncreasing = trend.every((val, i) => i === 0 || val >= trend[i - 1])
+      const recent = buoy.readings.slice(-4) // Look at last 4 readings
+      const heights = recent.map(r => r.waveHeight || r.waterColumnHeight || 0)
+      const isIncreasing = heights.every((val, i) => i === 0 || val >= heights[i - 1] * 0.9) // Allow for slight variance
+      const avgHeight = heights.reduce((sum, h) => sum + h, 0) / heights.length
       
-      if (hasLargeMagnitude) {
+      // Enhanced detection logic
+      if (hasCriticalMagnitude || currentHeight > 7.0) {
         return { isTsunami: true, severity: 'critical' as const }
-      } else if (hasSignificantWaveHeight && (hasRapidIncrease || isIncreasing)) {
+      } else if (hasLargeMagnitude || (hasSignificantWaveHeight && hasRapidIncrease)) {
         return { isTsunami: true, severity: 'high' as const }
-      } else if (hasSignificantWaveHeight || heightChangePercent > 25) {
+      } else if (hasSignificantWaveHeight || heightChangePercent > 20 || (avgHeight > 2.0 && isIncreasing)) {
+        return { isTsunami: true, severity: 'medium' as const }
+      } else if (currentHeight > 2.0 || heightChangePercent > 15) {
         return { isTsunami: true, severity: 'medium' as const }
       }
+    }
+    
+    // Fallback for initial detection
+    if (hasCriticalMagnitude) {
+      return { isTsunami: true, severity: 'critical' as const }
+    } else if (hasLargeMagnitude) {
+      return { isTsunami: true, severity: 'high' as const }
+    } else if (hasSignificantWaveHeight) {
+      return { isTsunami: true, severity: 'medium' as const }
     }
     
     return { isTsunami: false, severity: 'normal' as const }
@@ -125,7 +142,7 @@ export default function Home() {
       <header className="bg-slate-800 border-b border-slate-700 p-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold text-blue-400">
-            🌊 NOAA Tsunami Detection System
+            🌊 Pacific Tsunami Detection System
           </h1>
           <div className="flex items-center space-x-4">
             {lastUpdate && (
@@ -156,17 +173,25 @@ export default function Home() {
               </div>
             </div>
           ) : (
-            <Map
+            <LeafletMapNew
               buoys={buoyData}
               selectedBuoy={selectedBuoy}
               onBuoySelect={setSelectedBuoy}
               tsunamiDetector={detectTsunami}
+              showOnlyOceanic={true}
             />
           )}
         </div>
 
         {/* Side Panel */}
         <div className="w-96 bg-slate-800 border-l border-slate-700 overflow-y-auto">
+          <div className="p-4">
+            <TsunamiControlPanel
+              onSimulationToggle={setIsSimulationActive}
+              onEventSelect={setSelectedSimulationEvent}
+              isSimulationActive={isSimulationActive}
+            />
+          </div>
           <BuoyDataPanel
             buoys={buoyData}
             selectedBuoy={selectedBuoy}
@@ -181,10 +206,15 @@ export default function Home() {
       <footer className="bg-slate-800 border-t border-slate-700 px-4 py-2">
         <div className="max-w-7xl mx-auto flex justify-between items-center text-sm text-slate-400">
           <span>
-            {buoyData.length} active stations • {tsunamiAlerts.length} alerts
+            {buoyData.length} oceanic stations • {tsunamiAlerts.length} tsunami alerts
+            {isSimulationActive && (
+              <span className="ml-2 text-red-400">
+                • Simulation: {selectedSimulationEvent === 'mock' ? 'Live Pacific Event' : selectedSimulationEvent.replace('_', ' ')}
+              </span>
+            )}
           </span>
           <span>
-            Data source: NOAA National Data Buoy Center (NDBC)
+            Data source: NOAA NDBC {isSimulationActive ? '+ Tsunami Simulation' : '(Live Data)'}
           </span>
         </div>
       </footer>

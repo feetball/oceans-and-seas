@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server'
 import { NOAABuoyData, NOAABuoyReading, NOAAStationMetadata } from '@/types/buoy'
 import { loadStations, type TsunamiStation } from '@/utils/stations-manager'
+import { createMockTsunamiEvent, generateTsunamiReadings } from '@/utils/tsunami-simulation'
 
 async function fetchStationMetadata(stationId: string): Promise<NOAAStationMetadata | null> {
   try {
@@ -135,13 +136,37 @@ async function fetchStationData(stationId: string): Promise<NOAABuoyReading[]> {
   }
 }
 
-function generateMockReading(station: TsunamiStation, baseTime: Date): NOAABuoyReading {
+function generateMockReading(station: TsunamiStation, baseTime: Date, tsunamiEvent?: any): NOAABuoyReading {
   const variance = Math.random() * 0.4 - 0.2 // ±0.2m variance
   const baseHeight = 1.5 + Math.sin(Date.now() / 600000) * 0.8 // Tidal simulation
   
   // Add some stations with elevated readings for demo
   let waveHeight = baseHeight + variance
-  if (station.id === '46221' || station.id === '21413') {
+  
+  // Check if this station is affected by tsunami simulation
+  if (tsunamiEvent && tsunamiEvent.affectedBuoys.includes(station.id)) {
+    const tsunamiReadings = generateTsunamiReadings(
+      station.lat,
+      station.lon,
+      tsunamiEvent.event.epicenter.lat,
+      tsunamiEvent.event.epicenter.lon,
+      tsunamiEvent.event.magnitude,
+      tsunamiEvent.event.timestamp,
+      4 // 4 hours of simulation
+    )
+    
+    // Find the reading closest to current time
+    const currentTime = baseTime.getTime()
+    const closestReading = tsunamiReadings.reduce((closest, reading) => {
+      const timeDiff = Math.abs(reading.timestamp.getTime() - currentTime)
+      const closestDiff = Math.abs(closest.timestamp.getTime() - currentTime)
+      return timeDiff < closestDiff ? reading : closest
+    })
+    
+    if (closestReading) {
+      waveHeight = closestReading.waveHeight
+    }
+  } else if (station.id === '46221' || station.id === '21413') {
     waveHeight += Math.sin(Date.now() / 300000) * 1.5 + 1.0 // Simulated anomaly
   }
   
@@ -169,7 +194,33 @@ export async function GET() {
     const stations = await loadStations()
     console.log(`Loaded ${stations.length} stations`)
     
-    const buoyPromises = stations.map(async (station: TsunamiStation, index: number) => {
+    // Create tsunami simulation event for testing
+    const tsunamiEvent = createMockTsunamiEvent()
+    console.log(`Created tsunami simulation: ${tsunamiEvent.event.name}`)
+    console.log(`Affected buoys: ${tsunamiEvent.affectedBuoys.join(', ')}`)
+    
+    // Filter to oceanic buoys only
+    const oceanicStations = stations.filter(station => {
+      const lat = station.lat
+      const lon = station.lon
+      
+      // Exclude Great Lakes (rough boundaries)
+      if (lat >= 41 && lat <= 49 && lon >= -95 && lon <= -75) {
+        return false
+      }
+      
+      // Keep only deep ocean and offshore buoys
+      const isDeepOcean = Math.abs(lat) > 5 || Math.abs(lon) > 10
+      const isPacific = (lat >= -60 && lat <= 60 && (lon >= 100 || lon <= -120))
+      const isAtlantic = (lat >= -60 && lat <= 60 && lon >= -80 && lon <= -10)
+      const isIndian = (lat >= -60 && lat <= 30 && lon >= 20 && lon <= 120)
+      
+      return isDeepOcean && (isPacific || isAtlantic || isIndian)
+    })
+    
+    console.log(`Filtered to ${oceanicStations.length} oceanic stations`)
+    
+    const buoyPromises = oceanicStations.map(async (station: TsunamiStation, index: number) => {
       // Add small delay between requests to be respectful to NOAA servers
       await new Promise(resolve => setTimeout(resolve, index * 100))
       
@@ -185,7 +236,7 @@ export async function GET() {
         // Generate last 24 hours of mock data
         for (let i = 0; i < 48; i++) {
           const time = new Date(Date.now() - i * 30 * 60 * 1000) // Every 30 minutes
-          finalReadings.push(generateMockReading(station, time))
+          finalReadings.push(generateMockReading(station, time, tsunamiEvent))
         }
         finalReadings.reverse()
       }
