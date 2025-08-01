@@ -176,55 +176,133 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
-      {/* Header */}
-      <header className="bg-slate-800 border-b border-slate-700 p-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-blue-400">
-            🌊 Pacific Tsunami Detection System
-          </h1>
-          <div className="flex items-center space-x-4">
-            {lastUpdate && (
-              <span className="text-sm text-slate-400">
-                Last updated: {lastUpdate.toLocaleTimeString()}
-              </span>
-            )}
-            <button
-              onClick={fetchBuoyData}
-              disabled={isLoading}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white px-4 py-2 rounded text-sm"
-            >
-              {isLoading ? 'Updating...' : 'Refresh Data'}
-            </button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 text-white">
+      {/* Emergency Header */}
+      <header className="bg-gradient-to-r from-red-900 to-red-700 border-b-2 border-red-500 shadow-2xl">
+        <div className="max-w-7xl mx-auto p-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center animate-pulse">
+                <span className="text-2xl">🚨</span>
+              </div>
+              <div>
+                <h1 className="text-3xl font-black text-white tracking-wide">
+                  TSUNAMI WARNING SYSTEM
+                </h1>
+                <p className="text-red-200 text-sm font-medium">
+                  Pacific Ocean Early Detection Network
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-6">
+              {tsunamiAlerts.length > 0 && (
+                <div className="bg-red-500 text-white px-4 py-2 rounded-lg font-bold animate-pulse border-2 border-red-300">
+                  🔴 {tsunamiAlerts.length} ACTIVE ALERT{tsunamiAlerts.length > 1 ? 'S' : ''}
+                </div>
+              )}
+              {lastUpdate && (
+                <div className="text-right">
+                  <div className="text-red-200 text-xs">LAST UPDATE</div>
+                  <div className="text-white font-mono text-sm">
+                    {lastUpdate.toLocaleTimeString()}
+                  </div>
+                </div>
+              )}
+              <button
+                onClick={fetchBuoyData}
+                disabled={isLoading}
+                className="bg-white text-red-900 hover:bg-red-50 disabled:bg-gray-300 disabled:cursor-not-allowed font-bold px-6 py-3 rounded-lg text-sm border-2 border-white shadow-lg transition-all"
+              >
+                {isLoading ? '🔄 UPDATING...' : '🔄 REFRESH DATA'}
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="flex h-[calc(100vh-80px)]">
-        {/* Map Section */}
-        <div className="flex-1 relative">
+      {/* Critical Alerts Banner */}
+      {tsunamiAlerts.length > 0 && (
+        <div className="bg-gradient-to-r from-red-600 to-orange-600 border-b-4 border-red-400">
+          <div className="max-w-7xl mx-auto">
+            <TsunamiAlert alerts={tsunamiAlerts} />
+          </div>
+        </div>
+      )}
+
+      {/* Main Interface */}
+      <div className="flex h-[calc(100vh-140px)]">
+        {/* Map Section with Dark Theme */}
+        <div className="flex-1 relative bg-slate-900 border-r-4 border-red-600">
           {isLoading && buoyData.length === 0 ? (
-            <div className="absolute inset-0 flex items-center justify-center bg-slate-800">
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
               <div className="text-center">
-                <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-                <p className="text-slate-300">Loading NOAA buoy data...</p>
+                <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+                <p className="text-red-300 text-xl font-bold">INITIALIZING DETECTION NETWORK...</p>
+                <p className="text-slate-400 text-sm mt-2">Connecting to NOAA Ocean Buoys</p>
               </div>
             </div>
           ) : (
-            <LeafletMap
-              buoys={buoyData}
-              selectedBuoy={selectedBuoy}
-              onBuoySelect={setSelectedBuoy}
-              tsunamiDetector={detectTsunami}
-              showOnlyOceanic={true}
-            />
+            <div className="relative h-full">
+              <LeafletMap
+                buoys={buoyData}
+                selectedBuoy={selectedBuoy}
+                onBuoySelect={setSelectedBuoy}
+                tsunamiDetector={detectTsunami}
+                showOnlyOceanic={true}
+              />
+              {/* Map Overlay Info */}
+              <div className="absolute top-4 left-4 bg-black bg-opacity-80 rounded-lg p-4 border border-red-500">
+                <h3 className="text-red-400 font-bold text-lg mb-2">🌊 DETECTION STATUS</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">Active Stations:</span>
+                    <span className="text-white font-mono">{buoyData.length}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">Alert Level:</span>
+                    <span className={`font-bold ${
+                      tsunamiAlerts.some(a => a.severity === 'critical') ? 'text-red-500' :
+                      tsunamiAlerts.some(a => a.severity === 'high') ? 'text-orange-500' :
+                      tsunamiAlerts.some(a => a.severity === 'medium') ? 'text-yellow-500' :
+                      'text-green-500'
+                    }`}>
+                      {tsunamiAlerts.some(a => a.severity === 'critical') ? '🔴 CRITICAL' :
+                       tsunamiAlerts.some(a => a.severity === 'high') ? '🟠 HIGH' :
+                       tsunamiAlerts.some(a => a.severity === 'medium') ? '🟡 MEDIUM' :
+                       '🟢 NORMAL'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">Network Status:</span>
+                    <span className="text-green-400 font-bold">🟢 ONLINE</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
         </div>
 
-        {/* Side Panel */}
-        <div className="w-96 bg-slate-800 border-l border-slate-700 overflow-y-auto">
+        {/* Enhanced Control Panel */}
+        <div className="w-96 bg-gradient-to-b from-slate-800 to-slate-900 border-l border-slate-700 overflow-y-auto">
           <div className="p-4 space-y-4">
+            {/* Emergency Controls */}
+            <div className="bg-gradient-to-r from-red-900 to-red-800 rounded-lg p-4 border border-red-500">
+              <h3 className="text-red-300 font-bold text-lg mb-3 flex items-center">
+                🚨 EMERGENCY CONTROLS
+              </h3>
+              <div className="space-y-3">
+                <button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg border-2 border-red-400 transition-all">
+                  📢 BROADCAST ALERT
+                </button>
+                <button className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded-lg border-2 border-orange-400 transition-all">
+                  📞 NOTIFY AUTHORITIES
+                </button>
+                <button className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-4 rounded-lg border-2 border-yellow-400 transition-all">
+                  📋 GENERATE REPORT
+                </button>
+              </div>
+            </div>
+
             <CacheStatusPanel />
             <TsunamiPlaybackControls />
             <TsunamiControlPanel
@@ -243,20 +321,30 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Status Bar */}
-      <footer className="bg-slate-800 border-t border-slate-700 px-4 py-2">
-        <div className="max-w-7xl mx-auto flex justify-between items-center text-sm text-slate-400">
-          <span>
-            {buoyData.length} oceanic stations • {tsunamiAlerts.length} tsunami alerts
+      {/* Emergency Status Bar */}
+      <footer className="bg-gradient-to-r from-slate-900 to-slate-800 border-t-4 border-red-600 px-4 py-3">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="flex items-center space-x-6 text-sm">
+            <span className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-green-400 font-medium">SYSTEM OPERATIONAL</span>
+            </span>
+            <span className="text-slate-400">
+              {buoyData.length} stations • {tsunamiAlerts.length} alerts
+            </span>
             {isSimulationActive && (
-              <span className="ml-2 text-red-400">
-                • Simulation: {selectedSimulationEvent === 'mock' ? 'Live Pacific Event' : selectedSimulationEvent.replace('_', ' ')}
+              <span className="text-red-400 font-bold animate-pulse">
+                🔴 SIMULATION MODE: {selectedSimulationEvent === 'mock' ? 'LIVE EVENT' : selectedSimulationEvent.replace('_', ' ').toUpperCase()}
               </span>
             )}
-          </span>
-          <span>
-            Data source: NOAA NDBC {isSimulationActive ? '+ Tsunami Simulation' : '(Live Data)'}
-          </span>
+          </div>
+          <div className="flex items-center space-x-4 text-xs text-slate-400">
+            <span>DATA: NOAA NDBC {isSimulationActive ? '+ SIMULATION' : '(LIVE)'}</span>
+            <span>•</span>
+            <span>LAST SYNC: {lastUpdate?.toLocaleTimeString() || 'N/A'}</span>
+            <span>•</span>
+            <span className="text-green-400">SECURE CONNECTION</span>
+          </div>
         </div>
       </footer>
     </div>

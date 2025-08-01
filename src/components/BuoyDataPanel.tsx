@@ -13,12 +13,12 @@ interface BuoyDataPanelProps {
 export default function BuoyDataPanel({ buoys, selectedBuoy, onBuoySelect, tsunamiDetector, isLoading }: BuoyDataPanelProps) {
   if (isLoading) {
     return (
-      <div className="bg-slate-800 p-6">
+      <div className="bg-gradient-to-b from-slate-900 to-black p-6 border-t-4 border-red-600">
         <div className="animate-pulse">
-          <div className="h-6 bg-slate-700 rounded mb-4"></div>
+          <div className="h-8 bg-red-900 rounded mb-4"></div>
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-4 bg-slate-700 rounded"></div>
+              <div key={i} className="h-6 bg-slate-800 rounded border border-red-800"></div>
             ))}
           </div>
         </div>
@@ -45,22 +45,27 @@ export default function BuoyDataPanel({ buoys, selectedBuoy, onBuoySelect, tsuna
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'text-red-400 bg-red-900/20'
-      case 'high': return 'text-amber-400 bg-amber-900/20'
-      case 'medium': return 'text-yellow-400 bg-yellow-900/20'
-      default: return 'text-green-400 bg-green-900/20'
+      case 'critical': return 'text-red-400 bg-red-900/40 border-red-500'
+      case 'high': return 'text-orange-400 bg-orange-900/40 border-orange-500'
+      case 'medium': return 'text-yellow-400 bg-yellow-900/40 border-yellow-500'
+      default: return 'text-green-400 bg-green-900/40 border-green-500'
     }
   }
 
   return (
-    <div className="bg-slate-800 text-white overflow-hidden h-full">
-      <div className="p-6 border-b border-slate-700">
-        <h2 className="text-xl font-bold text-blue-400 mb-4">Station Data</h2>
-        
+    <div className="bg-gradient-to-b from-slate-900 to-black text-white overflow-hidden h-full border-t-4 border-red-600">
+      <div className="bg-gradient-to-r from-red-900 to-red-800 p-4 border-b-2 border-red-500">
+        <h2 className="text-xl font-black text-white flex items-center">
+          📊 STATION MONITORING
+        </h2>
+        <p className="text-red-200 text-sm">Real-time Ocean Sensor Data</p>
+      </div>
+      
+      <div className="p-4">
         {selectedBuoy ? (
-          <div>
+          <div className="bg-black bg-opacity-60 rounded-lg p-4 border-2 border-red-600">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white">{selectedBuoy.name}</h3>
+              <h3 className="text-xl font-bold text-white">{selectedBuoy.name}</h3>
               <div className="text-right">
                 <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(selectedBuoy.status)}`}>
                   {selectedBuoy.status}

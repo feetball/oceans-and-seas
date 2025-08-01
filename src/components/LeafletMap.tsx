@@ -411,45 +411,45 @@ export default function LeafletMap({ buoys, selectedBuoy, onBuoySelect, tsunamiD
       />
       
       {/* Legend */}
-      <div className="absolute top-4 right-4 bg-white bg-opacity-95 rounded-lg p-3 shadow-lg z-10 max-w-xs">
-        <h4 className="font-semibold text-sm mb-2 text-gray-800">Station Status</h4>
-        <div className="space-y-1 text-xs">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-green-500 border-2 border-white shadow"></div>
-            <span className="text-gray-700">Normal / Pre-wave</span>
+      <div className="absolute top-4 right-4 bg-black bg-opacity-90 rounded-lg p-4 shadow-2xl z-10 max-w-xs border-2 border-red-600">
+        <h4 className="font-black text-lg mb-3 text-red-400 text-center">🚨 ALERT STATUS</h4>
+        <div className="space-y-2 text-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-5 h-5 rounded-full bg-green-500 border-2 border-white shadow-lg"></div>
+            <span className="text-green-400 font-bold">NORMAL / PRE-WAVE</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-yellow-500 border-2 border-white shadow"></div>
-            <span className="text-gray-700">Medium Alert (50km zone)</span>
+          <div className="flex items-center gap-3">
+            <div className="w-5 h-5 rounded-full bg-yellow-500 border-2 border-white shadow-lg"></div>
+            <span className="text-yellow-400 font-bold">MEDIUM ALERT (50km)</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-orange-500 border-2 border-white shadow"></div>
-            <span className="text-gray-700">High Alert (100km zone)</span>
+          <div className="flex items-center gap-3">
+            <div className="w-5 h-5 rounded-full bg-orange-500 border-2 border-white shadow-lg"></div>
+            <span className="text-orange-400 font-bold">HIGH ALERT (100km)</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-red-500 border-2 border-white shadow"></div>
-            <span className="text-gray-700">Critical Alert (200km zone)</span>
+          <div className="flex items-center gap-3">
+            <div className="w-5 h-5 rounded-full bg-red-500 border-2 border-white shadow-lg animate-pulse"></div>
+            <span className="text-red-400 font-bold">CRITICAL ALERT (200km)</span>
           </div>
         </div>
-        <div className="mt-2 pt-2 border-t border-gray-300 text-xs text-gray-600">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-red-200 border border-red-400 opacity-60"></div>
-            <span>Tsunami danger zones</span>
+        <div className="mt-4 pt-3 border-t border-red-600 text-xs">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-5 h-2 bg-red-500 border border-red-600 opacity-60 rounded"></div>
+            <span className="text-red-300">Tsunami danger zones</span>
           </div>
-          <div className="flex items-center gap-2 mt-1">
-            <div className="w-4 h-4 rounded-full bg-red-500 border-2 border-white animate-pulse"></div>
-            <span>Earthquake epicenter</span>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-5 h-5 rounded-full bg-red-500 border-2 border-white animate-pulse"></div>
+            <span className="text-red-300">Earthquake epicenter</span>
           </div>
-          <div className="flex items-center gap-2 mt-1">
-            <div className="w-4 h-1 bg-red-500 border border-red-600" style={{borderStyle: 'dashed'}}></div>
-            <span>Tsunami wave front</span>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-5 h-1 bg-red-500 border border-red-600" style={{borderStyle: 'dashed'}}></div>
+            <span className="text-red-300">Tsunami wave front</span>
           </div>
-          <div className="mt-1 text-gray-500">
-            Showing oceanic buoys only
+          <div className="mt-2 text-gray-400 text-center font-mono">
+            OCEANIC STATIONS ONLY
           </div>
           {playbackState.isPlaying && (
-            <div className="mt-1 text-blue-600 font-medium">
-              🌊 Simulation Active
+            <div className="mt-2 text-red-400 font-black text-center animate-pulse">
+              🌊 SIMULATION ACTIVE
             </div>
           )}
         </div>
