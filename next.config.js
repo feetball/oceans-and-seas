@@ -10,23 +10,19 @@ const nextConfig = {
   
   // Optimize images
   images: {
-    domains: ['cdnjs.cloudflare.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'cdnjs.cloudflare.com',
+      },
+    ],
     formats: ['image/webp', 'image/avif'],
   },
   
-  // Webpack configuration for client-side libraries
-  webpack: (config, { isServer }) => {
-    // Exclude server-side packages from client bundle
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        path: false,
-        os: false,
-      }
-    }
-    
-    return config
+  // Turbopack configuration (replaces webpack in Next.js 16)
+  turbopack: {
+    // Server external packages are already configured above
+    // Turbopack handles fallbacks automatically for client-side builds
   },
   
   // Environment variables
