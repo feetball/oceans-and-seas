@@ -18,22 +18,9 @@
 				"clear": false
 			},
 			"isBackground": true,
-			"problemMatcher": {
-				"owner": "nextjs",
-				"pattern": [
-					{
-						"regexp": "^\\s*at\\s+(\\S+)\\s+\\((.*?):(\\d+):(\\d+)\\)$",
-						"file": 2,
-						"line": 3,
-						"column": 4
-					}
-				],
-				"background": {
-					"activeOnStart": true,
-					"beginsPattern": ".*Starting the development server.*",
-					"endsPattern": ".*(Local|Ready).*"
-				}
-			}
+			"problemMatcher": [
+				"$tsc-watch"
+			]
 		},
 		{
 			"label": "build",

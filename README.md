@@ -147,3 +147,10 @@ This application is for demonstration and educational purposes. For actual tsuna
 - National Weather Service
 - Pacific Tsunami Warning Center
 - Local emergency management agencies
+
+## Security
+
+- **CVE-2025-55182**: Addressed by upgrading `next` to `15.4.8` in `package.json`.
+  - Impact: Unauthenticated remote code execution via React Server Components in some Next.js release lines.
+  - Action: Updated package lock and dependencies via `npm install` to pick a patched Next.js release (15.4.8). Run `npm install` to apply the fix locally.
+  - Note: Also updated `.vscode/tasks.json` to use a valid problem matcher (`$tsc-watch`), which avoids a VS Code problem matcher schema error.
