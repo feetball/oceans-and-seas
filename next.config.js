@@ -19,12 +19,6 @@ const nextConfig = {
     formats: ['image/webp', 'image/avif'],
   },
   
-  // Turbopack configuration (replaces webpack in Next.js 16)
-  turbopack: {
-    // Server external packages are already configured above
-    // Turbopack handles fallbacks automatically for client-side builds
-  },
-  
   // Environment variables
   env: {
     VERCEL_ENV: process.env.VERCEL_ENV,

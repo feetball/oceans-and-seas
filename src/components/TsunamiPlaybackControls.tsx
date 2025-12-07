@@ -12,11 +12,10 @@ interface TsunamiPlaybackControlsProps {
 
 export default function TsunamiPlaybackControlsPanel({ className = '' }: TsunamiPlaybackControlsProps) {
   const [state, setState] = useState<TsunamiPlaybackState>(tsunamiPlaybackManager.getState())
-  const [controls, setControls] = useState<TsunamiPlaybackControls>(tsunamiPlaybackManager.getControls())
+  const controls = tsunamiPlaybackManager.getControls()
 
   useEffect(() => {
     const unsubscribe = tsunamiPlaybackManager.subscribe(setState)
-    setControls(tsunamiPlaybackManager.getControls())
     
     // Add keyboard shortcuts
     const handleKeyPress = (event: KeyboardEvent) => {
